@@ -18,7 +18,6 @@ pipeline {
 
     stage('Prepare Docker config') {
       steps {
-        // create a minimal docker config dir without credential helpers
         sh '''
           rm -rf .docker-temp
           mkdir -p .docker-temp
@@ -58,20 +57,14 @@ pipeline {
 
   post {
     success {
-      steps {
-        echo "✅ Build & run succeeded — app should be at http://localhost:${env.HOST_PORT}"
-      }
+      echo "✅ Build & run succeeded — app should be at http://localhost:${env.HOST_PORT}"
     }
     failure {
-      steps {
-        echo "❌ Build failed — check the logs above for errors."
-      }
+      echo "❌ Build failed — check the logs above for errors."
     }
     always {
-      steps {
-        // optional: show docker version and cleanup if needed
-        sh '/usr/local/bin/docker --version || true'
-      }
+      // safe diagnostics; plain step calls (no steps{} wrapper) for compatibility
+      sh '/usr/local/bin/docker --version || true'
     }
   }
 }
