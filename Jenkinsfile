@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 echo 'Cloning repository...'
-                git 'https://github.com/yourusername/your-repo.git'  // 🔁 change this to your actual repo URL
+                git 'https://github.com/architpatilbtech2022-hash/Task-1.git'  // 🔁 change this to your actual repo URL
             }
         }
 
