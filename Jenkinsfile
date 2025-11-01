@@ -2,15 +2,19 @@ pipeline {
   agent any
 
   environment {
-    IMAGE_NAME = "hello-devops"
+    IMAGE_NAME     = "hello-devops"
     CONTAINER_NAME = "hello-devops-container"
-    HOST_PORT = "5050"
+    HOST_PORT      = "5050"
     CONTAINER_PORT = "5000"
-    DOCKER = "/usr/local/bin/docker"
+    DOCKER         = "/usr/local/bin/docker"
   }
 
   stages {
-    stage('Checkout') { steps { checkout scm } }
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
 
     stage('Prepare Docker config') {
       steps {
@@ -26,7 +30,6 @@ pipeline {
     stage('Build Docker Image') {
       steps {
         script {
-          // tell docker CLI to use the temporary config (bypasses credential helper)
           withEnv(["DOCKER_CONFIG=${env.WORKSPACE}/.docker-temp"]) {
             sh "${DOCKER} build -t ${IMAGE_NAME} ."
           }
@@ -53,5 +56,22 @@ pipeline {
     }
   }
 
-  post { success { echo '✅ Done' } failure { echo '❌ Failed' } }
+  post {
+    success {
+      steps {
+        echo "✅ Build & run succeeded — app should be at http://localhost:${env.HOST_PORT}"
+      }
+    }
+    failure {
+      steps {
+        echo "❌ Build failed — check the logs above for errors."
+      }
+    }
+    always {
+      steps {
+        // optional: show docker version and cleanup if needed
+        sh '/usr/local/bin/docker --version || true'
+      }
+    }
+  }
 }
