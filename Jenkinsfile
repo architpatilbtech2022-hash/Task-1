@@ -1,11 +1,19 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "hello-devops"
+        CONTAINER_NAME = "hello-devops-container"
+        HOST_PORT = "5050"
+        CONTAINER_PORT = "5000"
+    }
+
     stages {
         stage('Checkout Code') {
             steps {
-                echo 'Cloning repository...'
-                git 'https://github.com/architpatilbtech2022-hash/Task-1.git'  // 🔁 change this to your actual repo URL
+                echo 'Reusing repository checkout (checkout scm)'
+                // Reuses the SCM checkout Jenkins used to load this Jenkinsfile
+                checkout scm
             }
         }
 
@@ -13,7 +21,7 @@ pipeline {
             steps {
                 script {
                     echo "🚀 Building Docker image..."
-                    sh 'docker build -t hello-devops .'
+                    sh "docker build -t ${env.IMAGE_NAME} ."
                 }
             }
         }
@@ -22,8 +30,8 @@ pipeline {
             steps {
                 script {
                     echo "🧩 Running Docker container..."
-                    sh 'docker rm -f hello-devops-container || true'
-                    sh 'docker run -d -p 5050:5000 --name hello-devops-container hello-devops'
+                    sh "docker rm -f ${env.CONTAINER_NAME} || true"
+                    sh "docker run -d -p ${env.HOST_PORT}:${env.CONTAINER_PORT} --name ${env.CONTAINER_NAME} ${env.IMAGE_NAME}"
                 }
             }
         }
@@ -33,18 +41,14 @@ pipeline {
                 script {
                     echo "🔍 Checking running containers..."
                     sh 'docker ps'
-                    echo "✅ Container running successfully at http://localhost:5050"
+                    echo "✅ Container running (if everything succeeded) at http://localhost:${HOST_PORT}"
                 }
             }
         }
     }
 
     post {
-        success {
-            echo '✅ Docker image built and container started successfully!'
-        }
-        failure {
-            echo '❌ Build failed. Check logs for errors.'
-        }
+        success { echo '✅ Docker image built and container started successfully!' }
+        failure { echo '❌ Build failed. Check logs for errors.' }
     }
 }
